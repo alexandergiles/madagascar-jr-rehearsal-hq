@@ -1,0 +1,10 @@
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Never commit plaintext media / script text — only encrypted (.enc) copies.
+media/*.mp3
+media/*.pdf
+script_text.json

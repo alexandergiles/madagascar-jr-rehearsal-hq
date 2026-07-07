@@ -1,0 +1,88 @@
+{
+  "characters": [
+    {
+      "name": "ALEX",
+      "lines": 33
+    },
+    {
+      "name": "MARTY",
+      "lines": 17
+    },
+    {
+      "name": "SKIPPER",
+      "lines": 13
+    },
+    {
+      "name": "GLORIA",
+      "lines": 9
+    },
+    {
+      "name": "KING JULIEN",
+      "lines": 8
+    },
+    {
+      "name": "PENGUINS",
+      "lines": 7
+    },
+    {
+      "name": "LEMURS",
+      "lines": 7
+    },
+    {
+      "name": "MELMAN",
+      "lines": 6
+    },
+    {
+      "name": "ZOO GUESTS",
+      "lines": 5
+    },
+    {
+      "name": "ZOOKEEPER ZEKE",
+      "lines": 3
+    },
+    {
+      "name": "GUESTS",
+      "lines": 3
+    },
+    {
+      "name": "FOOSA",
+      "lines": 3
+    },
+    {
+      "name": "LEAD SERVERS",
+      "lines": 2
+    },
+    {
+      "name": "ZOOKEEPER ZELDA",
+      "lines": 2
+    },
+    {
+      "name": "ZOOKEEPER ZOE",
+      "lines": 2
+    },
+    {
+      "name": "KOWALSKI",
+      "lines": 2
+    },
+    {
+      "name": "LIONESSES",
+      "lines": 2
+    },
+    {
+      "name": "ANIMALS",
+      "lines": 2
+    },
+    {
+      "name": "LARS",
+      "lines": 2
+    },
+    {
+      "name": "LEMUR SOLOISTS",
+      "lines": 2
+    },
+    {
+      "name": "ALL SERVERS",
+      "lines": 2
+    }
+  ]
+}

@@ -1,0 +1,479 @@
+{
+  "tracks": [
+    {
+      "num": 1,
+      "file": "01 It_s Showtime.mp3",
+      "title": "It's Showtime",
+      "category": "ensemble",
+      "scene": "Act 1 opener \u2014 The zoo animals show off for the visitors at Central Park Zoo.",
+      "who": "Alex, Marty, Gloria, Melman + ENSEMBLE (zoo animals)",
+      "characters": [
+        "ENSEMBLE",
+        "ALEX",
+        "MARTY",
+        "GLORIA",
+        "MELMAN"
+      ],
+      "group": 1
+    },
+    {
+      "num": 2,
+      "file": "02 It_s Showtime (Playoff).mp3",
+      "title": "It's Showtime (Playoff)",
+      "category": "cue",
+      "scene": "Music that plays after the opening number ends \u2014 scene change.",
+      "who": "Orchestra",
+      "characters": [
+        "ENSEMBLE"
+      ],
+      "group": 1
+    },
+    {
+      "num": 3,
+      "file": "03 Penguin Underscore.mp3",
+      "title": "Penguin Underscore",
+      "category": "underscore",
+      "scene": "Music under the penguins' first sneaky scene.",
+      "who": "Orchestra (penguins on stage)",
+      "characters": [
+        "SKIPPER",
+        "KOWALSKI",
+        "RICO",
+        "PRIVATE"
+      ],
+      "group": 1
+    },
+    {
+      "num": 4,
+      "file": "04 Wild and Free.mp3",
+      "title": "Wild and Free",
+      "category": "ensemble",
+      "scene": "Marty dreams about leaving the zoo for the wild. Alex and friends join in.",
+      "who": "Marty, Alex + ENSEMBLE",
+      "characters": [
+        "ENSEMBLE",
+        "MARTY",
+        "ALEX",
+        "GLORIA",
+        "MELMAN"
+      ],
+      "group": 1
+    },
+    {
+      "num": 5,
+      "file": "05 Best Friends.mp3",
+      "title": "Best Friends",
+      "category": "listen",
+      "scene": "Alex and Marty share a moment as best friends.",
+      "who": "Alex & Marty duet",
+      "characters": [
+        "ALEX",
+        "MARTY"
+      ],
+      "group": 1
+    },
+    {
+      "num": 6,
+      "file": "06 News Underscore.mp3",
+      "title": "News Underscore",
+      "category": "underscore",
+      "scene": "The TV news reports Marty has escaped the zoo.",
+      "who": "Orchestra",
+      "characters": [
+        "ENSEMBLE"
+      ],
+      "group": 1
+    },
+    {
+      "num": 7,
+      "file": "07 Penguin Underscore 2.mp3",
+      "title": "Penguin Underscore 2",
+      "category": "underscore",
+      "scene": "Sneaky penguin music.",
+      "who": "Orchestra",
+      "characters": [
+        "SKIPPER",
+        "KOWALSKI",
+        "RICO",
+        "PRIVATE"
+      ],
+      "group": 1
+    },
+    {
+      "num": 8,
+      "file": "08 Relax, Be Cool, Chill Out.mp3",
+      "title": "Relax, Be Cool, Chill Out",
+      "category": "ensemble",
+      "scene": "Alex tries to stay calm after learning Marty ran away.",
+      "who": "Alex + zoo animals ENSEMBLE",
+      "characters": [
+        "ENSEMBLE",
+        "ALEX",
+        "GLORIA",
+        "MELMAN"
+      ],
+      "group": 1
+    },
+    {
+      "num": 9,
+      "file": "09 Grand Central.mp3",
+      "title": "Grand Central",
+      "category": "ensemble",
+      "scene": "Big number! The animals arrive at Grand Central Station in NYC.",
+      "who": "Everyone \u2014 full ENSEMBLE",
+      "characters": [
+        "ENSEMBLE",
+        "ALEX",
+        "MARTY",
+        "GLORIA",
+        "MELMAN",
+        "SKIPPER",
+        "KOWALSKI",
+        "RICO",
+        "PRIVATE"
+      ],
+      "group": 1
+    },
+    {
+      "num": 10,
+      "file": "10 Penguin Underscore 3.mp3",
+      "title": "Penguin Underscore 3",
+      "category": "underscore",
+      "scene": "More penguin scheming.",
+      "who": "Orchestra",
+      "characters": [
+        "SKIPPER",
+        "KOWALSKI",
+        "RICO",
+        "PRIVATE"
+      ],
+      "group": 2
+    },
+    {
+      "num": 11,
+      "file": "11 Southward Ho!.mp3",
+      "title": "Southward Ho!",
+      "category": "ensemble",
+      "scene": "The animals get shipped off to Africa.",
+      "who": "ENSEMBLE",
+      "characters": [
+        "ENSEMBLE",
+        "ALEX",
+        "MARTY",
+        "GLORIA",
+        "MELMAN",
+        "SKIPPER",
+        "KOWALSKI",
+        "RICO",
+        "PRIVATE"
+      ],
+      "group": 2
+    },
+    {
+      "num": 12,
+      "file": "12 Penguins_ Sea Shanty.mp3",
+      "title": "Penguins' Sea Shanty",
+      "category": "listen",
+      "scene": "The penguins take over the ship at sea.",
+      "who": "Skipper, Kowalski, Rico, Private (Penguins)",
+      "characters": [
+        "SKIPPER",
+        "KOWALSKI",
+        "RICO",
+        "PRIVATE"
+      ],
+      "group": 2
+    },
+    {
+      "num": 13,
+      "file": "13 Penguins_ Sea Shanty (Playoff).mp3",
+      "title": "Penguins' Sea Shanty (Playoff)",
+      "category": "cue",
+      "scene": "Music at the end of the sea shanty.",
+      "who": "Orchestra",
+      "characters": [
+        "SKIPPER",
+        "KOWALSKI",
+        "RICO",
+        "PRIVATE"
+      ],
+      "group": 2
+    },
+    {
+      "num": 14,
+      "file": "14 Welcome To Me.mp3",
+      "title": "Welcome To Me",
+      "category": "ensemble",
+      "scene": "King Julien introduces himself. Lemurs surround him.",
+      "who": "King Julien + Lemur ENSEMBLE",
+      "characters": [
+        "ENSEMBLE",
+        "KING JULIEN",
+        "MAURICE",
+        "MORT"
+      ],
+      "group": 2
+    },
+    {
+      "num": 15,
+      "file": "15 I Like To Move It.mp3",
+      "title": "I Like To Move It",
+      "category": "ensemble",
+      "scene": "HUGE dance number! Lemurs celebrate with the New York animals.",
+      "who": "King Julien + full ENSEMBLE (lemurs)",
+      "characters": [
+        "ENSEMBLE",
+        "KING JULIEN",
+        "MAURICE",
+        "MORT",
+        "ALEX",
+        "MARTY",
+        "GLORIA",
+        "MELMAN"
+      ],
+      "group": 2
+    },
+    {
+      "num": 16,
+      "file": "16 Steak.mp3",
+      "title": "Steak",
+      "category": "listen",
+      "scene": "Alex daydreams about the steak he misses from the zoo.",
+      "who": "Alex (with small ensemble backup)",
+      "characters": [
+        "ALEX",
+        "ENSEMBLE"
+      ],
+      "group": 2
+    },
+    {
+      "num": 17,
+      "file": "17 Penguins_ Sea SHanty (Reprise).mp3",
+      "title": "Penguins' Sea Shanty (Reprise)",
+      "category": "listen",
+      "scene": "Penguins reprise their shanty.",
+      "who": "Penguins",
+      "characters": [
+        "SKIPPER",
+        "KOWALSKI",
+        "RICO",
+        "PRIVATE"
+      ],
+      "group": 3
+    },
+    {
+      "num": 18,
+      "file": "18 Living In Paradise.mp3",
+      "title": "Living In Paradise",
+      "category": "ensemble",
+      "scene": "The New York animals enjoy their new home on the island.",
+      "who": "Alex, Marty, Gloria, Melman + ENSEMBLE",
+      "characters": [
+        "ENSEMBLE",
+        "ALEX",
+        "MARTY",
+        "GLORIA",
+        "MELMAN"
+      ],
+      "group": 3
+    },
+    {
+      "num": 19,
+      "file": "19 Ship_s Horn.mp3",
+      "title": "Ship's Horn",
+      "category": "cue",
+      "scene": "Sound effect \u2014 the boat horn.",
+      "who": "Sound effect",
+      "characters": [
+        "ENSEMBLE"
+      ],
+      "group": 3
+    },
+    {
+      "num": 20,
+      "file": "20 Penguin Underscore 4.mp3",
+      "title": "Penguin Underscore 4",
+      "category": "underscore",
+      "scene": "Penguins scheming again.",
+      "who": "Orchestra",
+      "characters": [
+        "SKIPPER",
+        "KOWALSKI",
+        "RICO",
+        "PRIVATE"
+      ],
+      "group": 3
+    },
+    {
+      "num": 21,
+      "file": "21 Foosa Hungry.mp3",
+      "title": "Foosa Hungry!",
+      "category": "ensemble",
+      "scene": "The scary foosa attack! Lemurs run for their lives.",
+      "who": "Foosa + Lemur ENSEMBLE",
+      "characters": [
+        "ENSEMBLE",
+        "FOOSA",
+        "KING JULIEN",
+        "MAURICE",
+        "MORT"
+      ],
+      "group": 3
+    },
+    {
+      "num": 22,
+      "file": "22 Thunder.mp3",
+      "title": "Thunder",
+      "category": "cue",
+      "scene": "Sound effect \u2014 thunder crash.",
+      "who": "Sound effect",
+      "characters": [
+        "ENSEMBLE"
+      ],
+      "group": 3
+    },
+    {
+      "num": 23,
+      "file": "23 Best Friends (Reprise).mp3",
+      "title": "Best Friends (Reprise)",
+      "category": "listen",
+      "scene": "Alex and Marty reunite as best friends again.",
+      "who": "Alex & Marty",
+      "characters": [
+        "ALEX",
+        "MARTY"
+      ],
+      "group": 3
+    },
+    {
+      "num": 24,
+      "file": "24 The King Of Madagascar.mp3",
+      "title": "The King Of Madagascar",
+      "category": "ensemble",
+      "scene": "King Julien crowns Alex the new king.",
+      "who": "King Julien + ENSEMBLE",
+      "characters": [
+        "ENSEMBLE",
+        "KING JULIEN",
+        "MAURICE",
+        "MORT",
+        "ALEX"
+      ],
+      "group": 3
+    },
+    {
+      "num": 25,
+      "file": "25 Penguin Underscore 5.mp3",
+      "title": "Penguin Underscore 5",
+      "category": "underscore",
+      "scene": "Final penguin moment.",
+      "who": "Orchestra",
+      "characters": [
+        "SKIPPER",
+        "KOWALSKI",
+        "RICO",
+        "PRIVATE"
+      ],
+      "group": 3
+    },
+    {
+      "num": 26,
+      "file": "26 Together Forever.mp3",
+      "title": "Together Forever",
+      "category": "ensemble",
+      "scene": "FINALE! Everyone celebrates their friendship.",
+      "who": "Full ENSEMBLE \u2014 everyone",
+      "characters": [
+        "ENSEMBLE",
+        "ALEX",
+        "MARTY",
+        "GLORIA",
+        "MELMAN",
+        "SKIPPER",
+        "KOWALSKI",
+        "RICO",
+        "PRIVATE",
+        "KING JULIEN",
+        "MAURICE",
+        "MORT"
+      ],
+      "group": 3
+    },
+    {
+      "num": 27,
+      "file": "27 Bows.mp3",
+      "title": "Bows",
+      "category": "ensemble",
+      "scene": "Curtain call \u2014 everyone takes a bow!",
+      "who": "Full ENSEMBLE \u2014 everyone",
+      "characters": [
+        "ENSEMBLE",
+        "ALEX",
+        "MARTY",
+        "GLORIA",
+        "MELMAN",
+        "SKIPPER",
+        "KOWALSKI",
+        "RICO",
+        "PRIVATE",
+        "KING JULIEN",
+        "MAURICE",
+        "MORT"
+      ],
+      "group": 3
+    },
+    {
+      "num": 28,
+      "file": "28 I Like To Move It (Reprise).mp3",
+      "title": "I Like To Move It (Reprise)",
+      "category": "ensemble",
+      "scene": "One more dance to send the audience home smiling!",
+      "who": "Full ENSEMBLE \u2014 everyone",
+      "characters": [
+        "ENSEMBLE",
+        "ALEX",
+        "MARTY",
+        "GLORIA",
+        "MELMAN",
+        "SKIPPER",
+        "KOWALSKI",
+        "RICO",
+        "PRIVATE",
+        "KING JULIEN",
+        "MAURICE",
+        "MORT"
+      ],
+      "group": 3
+    },
+    {
+      "num": 29,
+      "file": "29 Exit Music.mp3",
+      "title": "Exit Music",
+      "category": "cue",
+      "scene": "Music that plays as the audience leaves.",
+      "who": "Orchestra",
+      "characters": [
+        "ENSEMBLE"
+      ],
+      "group": 3
+    }
+  ],
+  "groups": {
+    "1": {
+      "start": 1,
+      "end": 38,
+      "label": "Group 1 (Act 1, Opening)"
+    },
+    "2": {
+      "start": 39,
+      "end": 68,
+      "label": "Group 2 (Act 1, Middle)"
+    },
+    "3": {
+      "start": 69,
+      "end": 108,
+      "label": "Group 3 (Act 2, Madagascar)",
+      "firstSong": 17
+    }
+  }
+}

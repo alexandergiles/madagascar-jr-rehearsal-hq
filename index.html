@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Madagascar Jr. — Rehearsal HQ</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="lock-screen" class="lock-screen" hidden>
+    <div class="lock-card">
+      <div class="lock-logo">🦁🔒</div>
+      <h2>Madagascar Jr. — Rehearsal HQ</h2>
+      <p>Enter your passkey to unlock songs and script.</p>
+      <form id="lock-form">
+        <input
+          type="password"
+          id="lock-input"
+          placeholder="passkey"
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+          required
+        />
+        <button type="submit" id="lock-submit">Unlock</button>
+      </form>
+      <p id="lock-error" class="lock-error" hidden>
+        That passkey didn't work. Try again.
+      </p>
+      <p class="lock-hint">Tip: the passkey is the same for everyone in the cast.</p>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <div class="topbar-row">
+      <div class="brand">
+        <span class="logo">🦁</span>
+        <div>
+          <h1>Madagascar Jr.</h1>
+          <p class="tagline">Rehearsal HQ</p>
+        </div>
+      </div>
+      <div class="character-picker">
+        <label for="character-select">🎭 I'm playing:</label>
+        <select id="character-select">
+          <option value="ENSEMBLE" selected>Ensemble (default)</option>
+        </select>
+      </div>
+    </div>
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="songs">🎵 Songs</button>
+      <button class="tab-btn" data-tab="script">📖 Script</button>
+      <button class="tab-btn" data-tab="progress">🏆 Progress</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ================= SONGS TAB ================= -->
+    <section id="songs" class="tab-panel active">
+      <div class="filters">
+        <button class="filter-btn active" data-filter="ensemble">
+          ⭐ My Numbers <span class="filter-count" data-count="ensemble"></span>
+        </button>
+        <button class="filter-btn" data-filter="listen">
+          👂 Know Your Cues <span class="filter-count" data-count="listen"></span>
+        </button>
+        <button class="filter-btn" data-filter="underscore">
+          🎬 Underscores &amp; SFX <span class="filter-count" data-count="underscore"></span>
+        </button>
+        <button class="filter-btn" data-filter="all">
+          📋 All Tracks <span class="filter-count" data-count="all"></span>
+        </button>
+      </div>
+
+      <div class="filters group-filters">
+        <span class="filters-label">Group:</span>
+        <button class="group-filter-btn active" data-group="all">
+          All Groups
+        </button>
+        <button class="group-filter-btn" data-group="1">
+          Group 1 <span class="filter-count" data-groupcount="1"></span>
+        </button>
+        <button class="group-filter-btn" data-group="2">
+          Group 2 <span class="filter-count" data-groupcount="2"></span>
+        </button>
+        <button class="group-filter-btn accent" data-group="3">
+          Group 3 ★ <span class="filter-count" data-groupcount="3"></span>
+        </button>
+      </div>
+
+      <p class="hint">
+        Tap ▶ to hear the guide vocal. Slow it down while learning, then speed
+        back up when you know it! Mark each song 🌱 Learning, 💪 Working, or
+        ⭐ Solid to track progress. Change your character up top to see songs
+        for that role.
+      </p>
+
+      <div id="song-list" class="song-list"></div>
+    </section>
+
+    <!-- ================= SCRIPT TAB ================= -->
+    <section id="script" class="tab-panel">
+      <div class="script-toolbar">
+        <button id="prev-page" class="page-btn">◀ Previous</button>
+        <div class="page-jump">
+          Page <input type="number" id="page-input" min="1" value="1" /> of
+          <span id="page-count">—</span>
+        </div>
+        <button id="next-page" class="page-btn">Next ▶</button>
+        <div class="group-jumps">
+          <button class="page-btn small group-jump-btn" data-group="1">Group 1</button>
+          <button class="page-btn small group-jump-btn" data-group="2">Group 2</button>
+          <button class="page-btn small group-jump-btn accent" data-group="3">Group 3 ★</button>
+        </div>
+        <div class="zoom-block">
+          <button id="zoom-out" class="page-btn small">−</button>
+          <span id="zoom-label">100%</span>
+          <button id="zoom-in" class="page-btn small">+</button>
+        </div>
+      </div>
+
+      <div id="group-banner" class="group-banner"></div>
+
+      <div class="script-columns">
+        <div class="pdf-wrap">
+          <canvas id="pdf-canvas"></canvas>
+        </div>
+        <aside id="lines-panel" class="lines-panel">
+          <div class="lines-header">
+            <span id="lines-panel-title">Your lines on this page</span>
+          </div>
+          <div id="lines-content" class="lines-content">
+            <p class="lines-empty">
+              Choose your character from the dropdown above to see just your
+              lines from this page.
+            </p>
+          </div>
+        </aside>
+      </div>
+
+      <p class="hint" style="margin-top: 1rem;">
+        💡 Tip: 108 pages total (script pages match the numbers printed in the
+        corner of the script). Use ◀ / ▶ or your arrow keys. Look for lines
+        marked with your character name — those are yours!
+      </p>
+    </section>
+
+    <!-- ================= PROGRESS TAB ================= -->
+    <section id="progress" class="tab-panel">
+      <h2>Your Rehearsal Progress</h2>
+      <p id="progress-scope" class="progress-scope"></p>
+
+      <div class="stats-grid">
+        <div class="stat-card stat-solid">
+          <div class="stat-num" id="stat-solid">0</div>
+          <div class="stat-label">⭐ Solid</div>
+        </div>
+        <div class="stat-card stat-working">
+          <div class="stat-num" id="stat-working">0</div>
+          <div class="stat-label">💪 Working On It</div>
+        </div>
+        <div class="stat-card stat-learning">
+          <div class="stat-num" id="stat-learning">0</div>
+          <div class="stat-label">🌱 Learning</div>
+        </div>
+        <div class="stat-card stat-untouched">
+          <div class="stat-num" id="stat-untouched">0</div>
+          <div class="stat-label">💤 Not Started</div>
+        </div>
+      </div>
+
+      <h3>My Numbers</h3>
+      <div id="progress-ensemble" class="progress-list"></div>
+
+      <h3>Know Your Cues</h3>
+      <div id="progress-listen" class="progress-list"></div>
+
+      <div class="reset-row">
+        <button id="reset-progress" class="danger-btn">🗑️ Reset all progress</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Break a leg, buddy! 🎭</p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    }
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>
