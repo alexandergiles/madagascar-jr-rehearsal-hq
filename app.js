@@ -11,9 +11,9 @@ const AUDIO_PATH_SUFFIX = ".enc";
 const SCRIPT_TEXT_PATH = "script_text.json.enc";
 const VERIFIER_PATH = "verifier.enc";
 const CRYPTO_META_PATH = "crypto_meta.json";
-// The PDF has 8 pages of front matter (cover, TOC, welcome, glossary) before
-// script page 1. So printed page N == PDF page N + 8.
-const SCRIPT_PAGE_OFFSET = 8;
+// The merged PDF has 5 pages of front matter before script page 1.
+// So printed page N == PDF page N + 5.
+const SCRIPT_PAGE_OFFSET = 5;
 const pdfToScript = (p) => p - SCRIPT_PAGE_OFFSET;
 const scriptToPdf = (s) => s + SCRIPT_PAGE_OFFSET;
 
