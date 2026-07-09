@@ -188,21 +188,21 @@
     <div class="pat-card">
       <h3>✏️ Editor mode</h3>
       <p>
-        Paste a GitHub Personal Access Token with <b>Contents: Read &amp; Write</b>
-        on <code>alexandergiles/madagascar-jr-rehearsal-hq</code>. It's stored
-        only in this browser.
+        Enter the <b>editor passkey</b> (shared with you by the site owner).
+        Your browser will use it to unlock the GitHub token needed to save
+        edits. The passkey stays on this device.
       </p>
       <form id="pat-form">
         <input
           type="password"
           id="pat-input"
-          placeholder="ghp_… or github_pat_…"
+          placeholder="editor passkey"
           autocomplete="off"
           spellcheck="false"
         />
         <div class="pat-row">
-          <button type="submit" id="pat-save">Save &amp; enable</button>
-          <button type="button" id="pat-clear">Forget token</button>
+          <button type="submit" id="pat-save">Unlock &amp; enable</button>
+          <button type="button" id="pat-clear">Forget passkey</button>
           <button type="button" id="pat-cancel">Cancel</button>
         </div>
       </form>

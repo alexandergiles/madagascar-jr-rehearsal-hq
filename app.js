@@ -102,6 +102,7 @@ const GH_REPO = "madagascar-jr-rehearsal-hq";
 const GH_BRANCH = "main";
 const PAT_STORAGE_KEY = "madagascar_gh_pat_v1";
 const EDITOR_MODE_KEY = "madagascar_editor_mode_v1";
+const PAT_ENC_PATH = "pat.enc";
 
 function getPAT() {
   return localStorage.getItem(PAT_STORAGE_KEY) || "";
@@ -115,6 +116,30 @@ function isEditorMode() {
 }
 function setEditorMode(on) {
   localStorage.setItem(EDITOR_MODE_KEY, on ? "1" : "0");
+}
+
+async function deriveEditorKey(passkey) {
+  if (!CRYPTO_META?.editor_salt_b64) {
+    throw new Error("editor mode not configured yet (owner needs to run encrypt_pat.py)");
+  }
+  return deriveKey(
+    passkey,
+    CRYPTO_META.editor_salt_b64,
+    CRYPTO_META.editor_iters || 200000
+  );
+}
+
+async function unlockPATWithEditorKey(passkey) {
+  const editorKey = await deriveEditorKey(passkey);
+  const res = await fetch(PAT_ENC_PATH, { cache: "no-cache" });
+  if (!res.ok) throw new Error(`fetch ${PAT_ENC_PATH}: ${res.status}`);
+  const buf = await res.arrayBuffer();
+  const plain = await decryptBuffer(buf, editorKey);
+  const pat = new TextDecoder().decode(plain).trim();
+  if (!/^(ghp_|github_pat_)/.test(pat)) {
+    throw new Error("decrypted, but result doesn't look like a PAT");
+  }
+  return pat;
 }
 
 async function ghGetFile(path) {
@@ -808,8 +833,9 @@ function wireEditorToggle() {
   const clearBtn = document.getElementById("pat-clear");
 
   const openModal = () => {
-    input.value = getPAT();
+    input.value = "";
     status.textContent = "";
+    status.className = "pat-status";
     modal.hidden = false;
     setTimeout(() => input.focus(), 50);
   };
@@ -819,7 +845,6 @@ function wireEditorToggle() {
 
   btn.addEventListener("click", () => {
     if (isEditorMode()) {
-      // Turn off editor mode; keep PAT stored (they can flip back on quickly)
       setEditorMode(false);
       updateEditorToggleUI();
       renderSongs();
@@ -829,26 +854,43 @@ function wireEditorToggle() {
     }
   });
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const v = input.value.trim();
     if (!v) {
-      status.textContent = "Paste a token first.";
+      status.textContent = "Enter the editor passkey.";
+      status.className = "pat-status err";
       return;
     }
-    setPAT(v);
-    setEditorMode(true);
-    updateEditorToggleUI();
-    closeModal();
-    renderSongs();
-    if (pdfState.doc) updateLinesPanel(pdfState.pageNum);
+    const saveBtn = document.getElementById("pat-save");
+    saveBtn.disabled = true;
+    status.textContent = "Unlocking…";
+    status.className = "pat-status";
+    try {
+      const pat = await unlockPATWithEditorKey(v);
+      setPAT(pat);
+      setEditorMode(true);
+      updateEditorToggleUI();
+      closeModal();
+      renderSongs();
+      if (pdfState.doc) updateLinesPanel(pdfState.pageNum);
+    } catch (err) {
+      status.textContent =
+        err.message.includes("configured") || err.message.includes("404")
+          ? "Editor passkey isn't set up yet — the owner needs to run encrypt_pat.py."
+          : "Wrong passkey (or the token has been rotated).";
+      status.className = "pat-status err";
+    } finally {
+      saveBtn.disabled = false;
+    }
   });
 
   clearBtn.addEventListener("click", () => {
     setPAT("");
     setEditorMode(false);
     updateEditorToggleUI();
-    status.textContent = "Token forgotten.";
+    status.textContent = "Forgotten.";
+    status.className = "pat-status";
     input.value = "";
     renderSongs();
     if (pdfState.doc) updateLinesPanel(pdfState.pageNum);
