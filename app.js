@@ -535,7 +535,7 @@ function renderLyricsBlock(track) {
         </div>
       </div>`
     : "";
-  return `<details class="lyrics-block"${editing ? " open" : ""}>
+  return `<details class="lyrics-block">
     <summary>📜 Lyrics${editing ? " (editing)" : ""}</summary>
     <div class="lyrics-body">${body || '<p class="lyrics-empty">No lyrics yet — add some below.</p>'}</div>
     ${editUI}
