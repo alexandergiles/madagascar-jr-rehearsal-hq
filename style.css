@@ -552,6 +552,76 @@ audio {
   font-variant-numeric: tabular-nums;
 }
 
+.lyrics-block {
+  margin-top: 0.7rem;
+  padding: 0.6rem 0.8rem;
+  background: #fff9ec;
+  border: 2px dashed var(--paper-line);
+  border-radius: 12px;
+}
+
+.lyrics-block > summary {
+  cursor: pointer;
+  font-weight: 800;
+  color: var(--ink);
+  list-style: none;
+  padding: 0.15rem 0.2rem;
+  user-select: none;
+}
+.lyrics-block > summary::-webkit-details-marker { display: none; }
+.lyrics-block > summary::after {
+  content: " ▼";
+  font-size: 0.8em;
+  opacity: 0.5;
+}
+.lyrics-block[open] > summary::after {
+  content: " ▲";
+}
+
+.lyrics-body {
+  margin-top: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.lyric-block {
+  padding: 0.35rem 0.55rem;
+  background: #fff;
+  border-radius: 8px;
+  border-left: 4px solid var(--sky);
+}
+
+.lyric-speaker {
+  display: block;
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sky-dark);
+  margin-bottom: 0.2rem;
+}
+
+.lyric-text {
+  color: var(--ink);
+}
+
+.lyrics-note {
+  margin-top: 0.55rem;
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+.lyrics-loading {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
 /* ---- Script tab ---- */
 .script-toolbar {
   display: flex;

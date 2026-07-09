@@ -51,10 +51,18 @@ def main():
         print("Set PASSKEY env var (e.g. PASSKEY=lions123 python3 encrypt_media.py)", file=sys.stderr)
         sys.exit(1)
 
-    salt = secrets.token_bytes(16)
+    only_new = os.environ.get("ONLY_NEW") == "1"
+
+    meta_path = ROOT / "crypto_meta.json"
+    if only_new and meta_path.exists():
+        meta = json.loads(meta_path.read_text())
+        salt = base64.b64decode(meta["salt_b64"])
+        print(f"[reuse] loaded existing salt from crypto_meta.json")
+    else:
+        salt = secrets.token_bytes(16)
     key = derive_key(passkey.encode("utf-8"), salt)
 
-    (ROOT / "crypto_meta.json").write_text(
+    meta_path.write_text(
         json.dumps(
             {
                 "salt_b64": base64.b64encode(salt).decode(),
@@ -65,20 +73,30 @@ def main():
         )
     )
 
-    (ROOT / "verifier.enc").write_bytes(encrypt_bytes(key, VERIFIER_PLAINTEXT))
-    print("  ✓ verifier.enc")
+    if not only_new:
+        (ROOT / "verifier.enc").write_bytes(encrypt_bytes(key, VERIFIER_PLAINTEXT))
+        print("  ✓ verifier.enc")
 
     for f in sorted(MEDIA.glob("*")):
         if f.suffix == ".enc" or not f.is_file():
             continue
         dst = MEDIA / (f.name + ".enc")
+        if only_new and dst.exists():
+            continue
         dst.write_bytes(encrypt_bytes(key, f.read_bytes()))
         print(f"  ✓ media/{f.name} -> media/{dst.name}")
 
     stext = ROOT / "script_text.json"
-    if stext.exists():
-        (ROOT / "script_text.json.enc").write_bytes(encrypt_bytes(key, stext.read_bytes()))
+    stext_enc = ROOT / "script_text.json.enc"
+    if stext.exists() and not (only_new and stext_enc.exists()):
+        stext_enc.write_bytes(encrypt_bytes(key, stext.read_bytes()))
         print("  ✓ script_text.json -> script_text.json.enc")
+
+    lyrics = ROOT / "lyrics.json"
+    lyrics_enc = ROOT / "lyrics.json.enc"
+    if lyrics.exists() and not (only_new and lyrics_enc.exists()):
+        lyrics_enc.write_bytes(encrypt_bytes(key, lyrics.read_bytes()))
+        print("  ✓ lyrics.json -> lyrics.json.enc")
 
     print(f"\nPasskey OK. Salt: {base64.b64encode(salt).decode()}  Iters: {ITERS}")
 

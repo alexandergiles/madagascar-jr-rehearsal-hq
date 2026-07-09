@@ -8,3 +8,4 @@ venv/
 media/*.mp3
 media/*.pdf
 script_text.json
+lyrics.json

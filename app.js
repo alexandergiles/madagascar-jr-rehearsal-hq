@@ -9,6 +9,7 @@ const SCRIPT_PATH = "media/script.pdf.enc";
 const AUDIO_PATH_PREFIX = "media/";
 const AUDIO_PATH_SUFFIX = ".enc";
 const SCRIPT_TEXT_PATH = "script_text.json.enc";
+const LYRICS_PATH = "lyrics.json.enc";
 const VERIFIER_PATH = "verifier.enc";
 const CRYPTO_META_PATH = "crypto_meta.json";
 // The merged PDF has 5 pages of front matter before script page 1.
@@ -26,6 +27,7 @@ let currentAudio = null;
 let currentCharacter = loadCharacter();
 let SCRIPT_TEXT = null; // {pages: [{page, text}]} — loaded from OCR when ready
 let CHARACTERS = null; // {characters: [{name, lines}]} — loaded when OCR ready
+let LYRICS = null; // {"1": [{speaker, text}], ...} — loaded lazily
 
 // ---------- storage ----------
 function loadProgress() {
@@ -198,7 +200,8 @@ async function boot() {
   maybeLoadOcrData().then(() => {
     if (CHARACTERS) populateCharacterDropdown();
     if (SCRIPT_TEXT && pdfState.doc) updateLinesPanel(pdfState.pageNum);
-    if (!SCRIPT_TEXT || !CHARACTERS) pollForOcrData();
+    if (LYRICS) renderSongs();
+    if (!SCRIPT_TEXT || !CHARACTERS || !LYRICS) pollForOcrData();
   });
 }
 
@@ -210,6 +213,14 @@ async function maybeLoadOcrData() {
     }
   } catch {
     // decrypt/fetch failed — leave null, poller will retry
+  }
+  try {
+    if (!LYRICS) {
+      const plain = await fetchAndDecrypt(LYRICS_PATH);
+      LYRICS = JSON.parse(new TextDecoder().decode(plain));
+    }
+  } catch {
+    // ignore — lyrics may not be encrypted yet
   }
   try {
     if (!CHARACTERS) {
@@ -225,7 +236,7 @@ async function maybeLoadOcrData() {
 }
 
 function pollForOcrData() {
-  if (SCRIPT_TEXT && CHARACTERS) return;
+  if (SCRIPT_TEXT && CHARACTERS && LYRICS) return;
   const iv = setInterval(async () => {
     await maybeLoadOcrData();
     if (CHARACTERS) {
@@ -234,7 +245,10 @@ function pollForOcrData() {
     if (SCRIPT_TEXT && pdfState.doc) {
       updateLinesPanel(pdfState.pageNum);
     }
-    if (SCRIPT_TEXT && CHARACTERS) {
+    if (LYRICS) {
+      renderSongs();
+    }
+    if (SCRIPT_TEXT && CHARACTERS && LYRICS) {
       clearInterval(iv);
     }
   }, 10000);
@@ -378,6 +392,34 @@ function renderCounts() {
 }
 
 // ---------- render songs ----------
+function renderLyricsBlock(track) {
+  if (!LYRICS) {
+    return `<details class="lyrics-block">
+      <summary>📜 Lyrics</summary>
+      <p class="lyrics-loading">Lyrics loading… come back in a sec.</p>
+    </details>`;
+  }
+  const blocks = LYRICS[String(track.num)];
+  if (!blocks || !blocks.length) {
+    return "";
+  }
+  const body = blocks
+    .map((b) => {
+      const spk = b.speaker
+        ? `<span class="lyric-speaker">${escapeHtml(prettyName(b.speaker))}</span>`
+        : "";
+      return `<div class="lyric-block">${spk}<span class="lyric-text">${escapeHtml(
+        b.text
+      )}</span></div>`;
+    })
+    .join("");
+  return `<details class="lyrics-block">
+    <summary>📜 Lyrics</summary>
+    <div class="lyrics-body">${body}</div>
+    <p class="lyrics-note">Auto-extracted from the vocal score — a little OCR noise is expected.</p>
+  </details>`;
+}
+
 function renderSongs() {
   const list = document.getElementById("song-list");
   list.innerHTML = "";
@@ -438,6 +480,7 @@ function renderSongs() {
           <span class="speed-label">1.00×</span>
         </div>
       </div>
+      ${renderLyricsBlock(track)}
     `;
 
     card.querySelectorAll(".status-btn").forEach((btn) => {
