@@ -46,6 +46,9 @@
           <option value="ENSEMBLE" selected>Ensemble (default)</option>
         </select>
       </div>
+      <button id="editor-toggle" class="editor-toggle" title="Toggle editor mode">
+        ✏️ <span id="editor-toggle-label">Editor: off</span>
+      </button>
     </div>
     <nav class="tabs">
       <button class="tab-btn active" data-tab="songs">🎵 Songs</button>
@@ -180,6 +183,32 @@
       </div>
     </section>
   </main>
+
+  <div id="pat-modal" class="pat-modal" hidden>
+    <div class="pat-card">
+      <h3>✏️ Editor mode</h3>
+      <p>
+        Paste a GitHub Personal Access Token with <b>Contents: Read &amp; Write</b>
+        on <code>alexandergiles/madagascar-jr-rehearsal-hq</code>. It's stored
+        only in this browser.
+      </p>
+      <form id="pat-form">
+        <input
+          type="password"
+          id="pat-input"
+          placeholder="ghp_… or github_pat_…"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <div class="pat-row">
+          <button type="submit" id="pat-save">Save &amp; enable</button>
+          <button type="button" id="pat-clear">Forget token</button>
+          <button type="button" id="pat-cancel">Cancel</button>
+        </div>
+      </form>
+      <p id="pat-status" class="pat-status"></p>
+    </div>
+  </div>
 
   <footer>
     <p>Break a leg, buddy! 🎭</p>

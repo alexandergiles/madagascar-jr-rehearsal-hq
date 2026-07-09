@@ -70,7 +70,7 @@ async function deriveKey(passkey, saltB64, iters) {
     base,
     { name: "AES-GCM", length: 256 },
     true, // extractable so we can cache it
-    ["decrypt"]
+    ["decrypt", "encrypt"]
   );
 }
 
@@ -85,6 +85,88 @@ async function fetchAndDecrypt(url) {
   if (!res.ok) throw new Error(`fetch ${url}: ${res.status}`);
   const buf = await res.arrayBuffer();
   return decryptBuffer(buf);
+}
+
+async function encryptBuffer(plaintext, key = CRYPTO_KEY) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, plaintext);
+  const out = new Uint8Array(12 + ct.byteLength);
+  out.set(iv, 0);
+  out.set(new Uint8Array(ct), 12);
+  return out;
+}
+
+// ---------- GitHub Contents API (editor mode) ----------
+const GH_OWNER = "alexandergiles";
+const GH_REPO = "madagascar-jr-rehearsal-hq";
+const GH_BRANCH = "main";
+const PAT_STORAGE_KEY = "madagascar_gh_pat_v1";
+const EDITOR_MODE_KEY = "madagascar_editor_mode_v1";
+
+function getPAT() {
+  return localStorage.getItem(PAT_STORAGE_KEY) || "";
+}
+function setPAT(v) {
+  if (v) localStorage.setItem(PAT_STORAGE_KEY, v);
+  else localStorage.removeItem(PAT_STORAGE_KEY);
+}
+function isEditorMode() {
+  return !!getPAT() && localStorage.getItem(EDITOR_MODE_KEY) === "1";
+}
+function setEditorMode(on) {
+  localStorage.setItem(EDITOR_MODE_KEY, on ? "1" : "0");
+}
+
+async function ghGetFile(path) {
+  const pat = getPAT();
+  if (!pat) throw new Error("no PAT");
+  const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}?ref=${GH_BRANCH}`;
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${pat}`,
+      Accept: "application/vnd.github+json",
+    },
+  });
+  if (!res.ok) throw new Error(`GET ${path}: ${res.status}`);
+  return res.json(); // { sha, content (b64), ... }
+}
+
+async function ghPutFile(path, bytes, sha, message) {
+  const pat = getPAT();
+  if (!pat) throw new Error("no PAT");
+  const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`;
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${pat}`,
+      Accept: "application/vnd.github+json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      message,
+      content: bytesToB64(bytes),
+      sha,
+      branch: GH_BRANCH,
+    }),
+  });
+  if (res.status === 409 || res.status === 422) {
+    const err = new Error("conflict");
+    err.conflict = true;
+    throw err;
+  }
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`PUT ${path}: ${res.status} ${body.slice(0, 200)}`);
+  }
+  return res.json();
+}
+
+async function saveEncryptedJSON(path, obj, message) {
+  // Fetch latest sha (so we detect conflicts with concurrent edits)
+  const info = await ghGetFile(path);
+  const plain = new TextEncoder().encode(JSON.stringify(obj));
+  const cipherBytes = await encryptBuffer(plain);
+  return ghPutFile(path, cipherBytes, info.sha, message);
 }
 
 async function tryVerifyKey(key) {
@@ -113,7 +195,7 @@ async function importCachedKey() {
       raw,
       { name: "AES-GCM", length: 256 },
       true,
-      ["decrypt"]
+      ["decrypt", "encrypt"]
     );
   } catch {
     return null;
@@ -191,6 +273,7 @@ async function boot() {
   wireGroupFilters();
   wireResetBtn();
   wireGroupJumpButtons();
+  wireEditorToggle();
   renderCounts();
   renderSongs();
   renderProgress();
@@ -392,6 +475,33 @@ function renderCounts() {
 }
 
 // ---------- render songs ----------
+function lyricsBlocksToText(blocks) {
+  // "SPEAKER: line\nSPEAKER: line" — blank speaker becomes "(chorus): line"
+  return blocks
+    .map((b) => `${b.speaker || "-"}: ${b.text}`)
+    .join("\n");
+}
+function lyricsTextToBlocks(text) {
+  const out = [];
+  for (const raw of text.split("\n")) {
+    const line = raw.trim();
+    if (!line) continue;
+    const m = line.match(/^([^:]{1,40}):\s*(.*)$/);
+    if (m) {
+      const spk = m[1].trim();
+      out.push({
+        speaker: spk === "-" ? "" : spk.toUpperCase(),
+        text: m[2].trim(),
+      });
+    } else {
+      // continuation of the previous block
+      if (out.length) out[out.length - 1].text += " " + line;
+      else out.push({ speaker: "", text: line });
+    }
+  }
+  return out;
+}
+
 function renderLyricsBlock(track) {
   if (!LYRICS) {
     return `<details class="lyrics-block">
@@ -399,10 +509,9 @@ function renderLyricsBlock(track) {
       <p class="lyrics-loading">Lyrics loading… come back in a sec.</p>
     </details>`;
   }
-  const blocks = LYRICS[String(track.num)];
-  if (!blocks || !blocks.length) {
-    return "";
-  }
+  const blocks = LYRICS[String(track.num)] || [];
+  const editing = isEditorMode();
+  if (!blocks.length && !editing) return "";
   const body = blocks
     .map((b) => {
       const spk = b.speaker
@@ -413,10 +522,24 @@ function renderLyricsBlock(track) {
       )}</span></div>`;
     })
     .join("");
-  return `<details class="lyrics-block">
-    <summary>📜 Lyrics</summary>
-    <div class="lyrics-body">${body}</div>
-    <p class="lyrics-note">Auto-extracted from the vocal score — a little OCR noise is expected.</p>
+  const editUI = editing
+    ? `<div class="lyrics-editor" data-song="${track.num}">
+        <textarea class="lyrics-textarea" rows="10" spellcheck="false"
+          placeholder="SPEAKER: line one&#10;SPEAKER: line two">${escapeHtml(
+            lyricsBlocksToText(blocks)
+          )}</textarea>
+        <div class="editor-row">
+          <button class="save-btn" data-role="save-lyrics" data-song="${track.num}">💾 Save for everyone</button>
+          <span class="editor-hint">Format: <code>SPEAKER: text</code>, one per line.</span>
+          <span class="editor-status" data-role="status"></span>
+        </div>
+      </div>`
+    : "";
+  return `<details class="lyrics-block"${editing ? " open" : ""}>
+    <summary>📜 Lyrics${editing ? " (editing)" : ""}</summary>
+    <div class="lyrics-body">${body || '<p class="lyrics-empty">No lyrics yet — add some below.</p>'}</div>
+    ${editUI}
+    ${editing ? "" : '<p class="lyrics-note">Auto-extracted from the vocal score — a little OCR noise is expected.</p>'}
   </details>`;
 }
 
@@ -541,6 +664,43 @@ function renderSongs() {
       speedLabel.textContent = v.toFixed(2) + "×";
     });
 
+    const saveBtn = card.querySelector('[data-role="save-lyrics"]');
+    if (saveBtn) {
+      saveBtn.addEventListener("click", async () => {
+        const editor = card.querySelector(".lyrics-editor");
+        const ta = editor.querySelector("textarea");
+        const status = editor.querySelector('[data-role="status"]');
+        const newBlocks = lyricsTextToBlocks(ta.value);
+        saveBtn.disabled = true;
+        status.textContent = "Saving…";
+        status.className = "editor-status saving";
+        try {
+          const next = { ...(LYRICS || {}) };
+          if (newBlocks.length) next[String(track.num)] = newBlocks;
+          else delete next[String(track.num)];
+          await saveEncryptedJSON(
+            "lyrics.json.enc",
+            next,
+            `edit lyrics: #${track.num} ${track.title}`
+          );
+          LYRICS = next;
+          status.textContent = "Saved! Others will see it after Pages rebuilds (~40s).";
+          status.className = "editor-status ok";
+          renderSongs();
+        } catch (err) {
+          if (err.conflict) {
+            status.textContent =
+              "Conflict — someone else edited. Refresh and try again.";
+          } else {
+            status.textContent = "Error: " + err.message;
+          }
+          status.className = "editor-status err";
+        } finally {
+          saveBtn.disabled = false;
+        }
+      });
+    }
+
     list.appendChild(card);
   });
 }
@@ -624,6 +784,79 @@ function wireGroupJumpButtons() {
       if (!g) return;
       renderPage(scriptToPdf(g.start));
     });
+  });
+}
+
+// ---------- editor mode ----------
+function updateEditorToggleUI() {
+  const btn = document.getElementById("editor-toggle");
+  const label = document.getElementById("editor-toggle-label");
+  const on = isEditorMode();
+  label.textContent = on ? "Editor: ON" : "Editor: off";
+  btn.classList.toggle("on", on);
+  document.body.classList.toggle("editor-on", on);
+}
+
+function wireEditorToggle() {
+  updateEditorToggleUI();
+  const btn = document.getElementById("editor-toggle");
+  const modal = document.getElementById("pat-modal");
+  const form = document.getElementById("pat-form");
+  const input = document.getElementById("pat-input");
+  const status = document.getElementById("pat-status");
+  const cancel = document.getElementById("pat-cancel");
+  const clearBtn = document.getElementById("pat-clear");
+
+  const openModal = () => {
+    input.value = getPAT();
+    status.textContent = "";
+    modal.hidden = false;
+    setTimeout(() => input.focus(), 50);
+  };
+  const closeModal = () => {
+    modal.hidden = true;
+  };
+
+  btn.addEventListener("click", () => {
+    if (isEditorMode()) {
+      // Turn off editor mode; keep PAT stored (they can flip back on quickly)
+      setEditorMode(false);
+      updateEditorToggleUI();
+      renderSongs();
+      if (pdfState.doc) updateLinesPanel(pdfState.pageNum);
+    } else {
+      openModal();
+    }
+  });
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const v = input.value.trim();
+    if (!v) {
+      status.textContent = "Paste a token first.";
+      return;
+    }
+    setPAT(v);
+    setEditorMode(true);
+    updateEditorToggleUI();
+    closeModal();
+    renderSongs();
+    if (pdfState.doc) updateLinesPanel(pdfState.pageNum);
+  });
+
+  clearBtn.addEventListener("click", () => {
+    setPAT("");
+    setEditorMode(false);
+    updateEditorToggleUI();
+    status.textContent = "Token forgotten.";
+    input.value = "";
+    renderSongs();
+    if (pdfState.doc) updateLinesPanel(pdfState.pageNum);
+  });
+
+  cancel.addEventListener("click", closeModal);
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
   });
 }
 
@@ -755,43 +988,116 @@ function updateLinesPanel(page) {
   }
 
   const pageEntry = SCRIPT_TEXT.pages.find((p) => p.page === page);
-  if (!pageEntry || !pageEntry.text) {
-    content.innerHTML =
-      '<p class="lines-empty">No text detected on this page (might be a title or blank page).</p>';
+  const rawText = pageEntry?.text || "";
+  const editing = isEditorMode();
+
+  if (!pageEntry || !rawText) {
+    title.textContent = `Page ${pdfToScript(page)}`;
+    content.innerHTML = `
+      <p class="lines-empty">No text detected on this page (might be a title or blank page).</p>
+      ${editing ? renderScriptEditor(page, "") : ""}
+    `;
+    wireScriptEditor(page);
     return;
   }
 
-  const cues = extractCuesFromPageText(pageEntry.text);
+  const cues = extractCuesFromPageText(rawText);
   const isEnsemble = currentCharacter === "ENSEMBLE";
-
-  // Ensemble means "you're in the whole scene" — show every cue
   const mine = isEnsemble
     ? cues
     : cues.filter((c) => characterMatches(c.name, currentCharacter));
 
   title.textContent = isEnsemble
-    ? `Scene lines on page ${page}`
-    : `${prettyName(currentCharacter)}'s lines on page ${page}`;
+    ? `Scene lines on page ${pdfToScript(page)}`
+    : `${prettyName(currentCharacter)}'s lines on page ${pdfToScript(page)}`;
 
-  if (mine.length === 0) {
-    content.innerHTML = `<p class="lines-empty">${prettyName(
-      currentCharacter
-    )} has no lines on page ${page}. Flip to the next page ▶</p>`;
-    return;
-  }
+  const cuesHtml =
+    mine.length === 0
+      ? `<p class="lines-empty">${prettyName(
+          currentCharacter
+        )} has no lines on page ${pdfToScript(page)}. Flip to the next page ▶</p>`
+      : mine
+          .map((c) => {
+            const isMe =
+              !isEnsemble && characterMatches(c.name, currentCharacter);
+            return `
+              <div class="line-block ${isMe ? "mine" : ""}">
+                <span class="cue">${escapeHtml(c.name)}</span>
+                ${escapeHtml(c.text) || '<i style="opacity:0.6;">(action)</i>'}
+              </div>
+            `;
+          })
+          .join("");
 
-  content.innerHTML = mine
-    .map((c) => {
-      const isMe =
-        !isEnsemble && characterMatches(c.name, currentCharacter);
-      return `
-        <div class="line-block ${isMe ? "mine" : ""}">
-          <span class="cue">${escapeHtml(c.name)}</span>
-          ${escapeHtml(c.text) || '<i style="opacity:0.6;">(action)</i>'}
-        </div>
-      `;
-    })
-    .join("");
+  content.innerHTML = `${cuesHtml}${
+    editing ? renderScriptEditor(page, rawText) : ""
+  }`;
+  wireScriptEditor(page);
+}
+
+function renderScriptEditor(pdfPage, rawText) {
+  return `
+    <div class="script-editor" data-page="${pdfPage}">
+      <h4>✏️ Edit OCR text for this page</h4>
+      <p class="editor-hint">
+        Fix the raw OCR — cues will re-parse automatically. Format:
+        <code>SPEAKER: line</code>. This saves for everyone.
+      </p>
+      <textarea class="script-textarea" rows="16" spellcheck="false">${escapeHtml(
+        rawText
+      )}</textarea>
+      <div class="editor-row">
+        <button class="save-btn" data-role="save-script" data-page="${pdfPage}">
+          💾 Save page ${pdfToScript(pdfPage)}
+        </button>
+        <span class="editor-status" data-role="status"></span>
+      </div>
+    </div>
+  `;
+}
+
+function wireScriptEditor(pdfPage) {
+  const btn = document.querySelector('[data-role="save-script"]');
+  if (!btn) return;
+  btn.addEventListener("click", async () => {
+    const editor = btn.closest(".script-editor");
+    const ta = editor.querySelector("textarea");
+    const status = editor.querySelector('[data-role="status"]');
+    btn.disabled = true;
+    status.textContent = "Saving…";
+    status.className = "editor-status saving";
+    try {
+      const next = {
+        pages: SCRIPT_TEXT.pages.map((p) =>
+          p.page === pdfPage ? { ...p, text: ta.value } : p
+        ),
+      };
+      // If page didn't exist yet, add it
+      if (!next.pages.some((p) => p.page === pdfPage)) {
+        next.pages.push({ page: pdfPage, text: ta.value });
+        next.pages.sort((a, b) => a.page - b.page);
+      }
+      await saveEncryptedJSON(
+        "script_text.json.enc",
+        next,
+        `edit script page ${pdfToScript(pdfPage)} (pdf p${pdfPage})`
+      );
+      SCRIPT_TEXT = next;
+      status.textContent = "Saved! Others will see it after Pages rebuilds (~40s).";
+      status.className = "editor-status ok";
+      updateLinesPanel(pdfPage);
+    } catch (err) {
+      if (err.conflict) {
+        status.textContent =
+          "Conflict — someone else edited. Refresh and try again.";
+      } else {
+        status.textContent = "Error: " + err.message;
+      }
+      status.className = "editor-status err";
+    } finally {
+      btn.disabled = false;
+    }
+  });
 }
 
 function characterMatches(cueName, character) {
