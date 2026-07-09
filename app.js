@@ -214,7 +214,10 @@ async function maybeLoadOcrData() {
   try {
     if (!CHARACTERS) {
       const res = await fetch("characters.json", { cache: "no-cache" });
-      if (res.ok) CHARACTERS = await res.json();
+      if (res.ok) {
+        CHARACTERS = await res.json();
+        _canonicalSet = null;
+      }
     }
   } catch {
     // ignore
@@ -622,30 +625,78 @@ function updateGroupBanner(page) {
 
 // ---------- lines panel ----------
 const CUE_RE = /^([A-Z][A-Z0-9 &/'.\-]{1,28}[A-Z.])[\.\:]\s*(.*)$/;
+const HARDCODED_CANONICAL = [
+  "ALEX", "MARTY", "GLORIA", "MELMAN",
+  "SKIPPER", "KOWALSKI", "RICO", "PRIVATE", "PENGUINS",
+  "KING JULIEN", "MAURICE", "MORT", "LEMURS", "LEMUR SOLOISTS",
+  "FOOSA", "LIONESSES", "ANIMALS",
+  "ZOOKEEPER ZELDA", "ZOOKEEPER ZEKE", "ZOOKEEPER ZOE",
+  "ZOO GUESTS", "GUESTS", "ALL SERVERS", "LARS",
+  "ALL", "ALL LEMURS", "ALL PENGUINS",
+];
+const RUNHEAD_RE = /^(MADAGASCAR( JR\.?)?|A MUSICAL ADVENTURE( JR\.?)?)$/i;
+let _canonicalSet = null;
+function canonicalSet() {
+  if (_canonicalSet) return _canonicalSet;
+  const s = new Set(HARDCODED_CANONICAL);
+  (CHARACTERS?.characters || []).forEach((c) => s.add(c.name.toUpperCase()));
+  _canonicalSet = s;
+  return s;
+}
+function stripParentheticals(s) {
+  // remove (stage directions) — non-nested is fine for OCR text
+  return s.replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim();
+}
+function normalizeCueName(raw) {
+  return raw.replace(/[.:,]+$/, "").replace(/\s+/g, " ").trim().toUpperCase();
+}
 
 function extractCuesFromPageText(text) {
   const cues = [];
   const lines = text.split("\n");
+  const canon = canonicalSet();
   let current = null;
+  const flush = () => {
+    if (!current) return;
+    current.text = stripParentheticals(current.text);
+    if (current.name || current.text) cues.push(current);
+    current = null;
+  };
+
   for (const raw of lines) {
     const line = raw.trim();
-    if (!line) {
-      if (current) {
-        cues.push(current);
-        current = null;
-      }
-      continue;
-    }
+    if (!line) { flush(); continue; }
+    if (RUNHEAD_RE.test(line)) continue;
+    // Skip pure page numbers / footer noise
+    if (/^\d{1,3}\.?$/.test(line)) continue;
+    // Skip lines that are entirely a parenthetical stage direction
+    if (/^\([^)]*\)?$/.test(line)) continue;
+
+    // 1) NAME: dialogue on one line
     const m = line.match(CUE_RE);
     if (m) {
-      if (current) cues.push(current);
-      const name = m[1].replace(/\.$/, "").trim();
-      current = { name, text: m[2] ? m[2] : "" };
-    } else if (current) {
+      const name = normalizeCueName(m[1]);
+      if (canon.has(name) || /^[A-Z][A-Z .&'/-]+$/.test(name)) {
+        flush();
+        current = { name, text: m[2] || "" };
+        continue;
+      }
+    }
+
+    // 2) Bare canonical name on its own line — dialogue follows on next lines
+    const bare = normalizeCueName(line);
+    if (canon.has(bare)) {
+      flush();
+      current = { name: bare, text: "" };
+      continue;
+    }
+
+    // 3) Continuation of current cue's dialogue
+    if (current) {
       current.text += (current.text ? " " : "") + line;
     }
   }
-  if (current) cues.push(current);
+  flush();
   return cues;
 }
 
